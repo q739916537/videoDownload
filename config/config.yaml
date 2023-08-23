@@ -1,0 +1,7 @@
+database:
+  username: your_username
+  password: your_password
+  address: your_address:3306
+  database: your_database
+
+key: value

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GoORMHelperCache">
+    <option name="schemaMapping">
+      <map>
+        <entry key="MDB">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/db/db.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ResourceResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/api/modle/modle.go" />
+              <option value="file://$PROJECT_DIR$/types/types.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Server">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/server/readFile.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="VideoDetailList">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/api/modle/modle.go" />
+              <option value="file://$PROJECT_DIR$/types/types.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="VideoRecords">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/types/types.go" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="scannedPathMapping">
+      <map>
+        <entry key="file://$PROJECT_DIR$/api/modle/modle.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1692757357320" />
+              <option name="schema">
+                <list>
+                  <option value="ResourceResp" />
+                  <option value="VideoDetailList" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/db/db.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1692756528028" />
+              <option name="schema">
+                <list>
+                  <option value="MDB" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1692685750647" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/server/readFile.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1692757231930" />
+              <option name="schema">
+                <list>
+                  <option value="Server" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/types/types.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1692181865000" />
+              <option name="schema">
+                <list>
+                  <option value="ResourceResp" />
+                  <option value="VideoDetailList" />
+                  <option value="VideoRecords" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="tableStructMapping">
+      <map>
+        <entry key="mdb" value="MDB" />
+        <entry key="resource_resp" value="ResourceResp" />
+        <entry key="server" value="Server" />
+        <entry key="video_detail_list" value="VideoDetailList" />
+        <entry key="video_records" value="VideoRecords" />
+      </map>
+    </option>
+    <option name="lastTimeChecked" value="1692698603070" />
+  </component>
+</project>
