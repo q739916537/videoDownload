@@ -1,19 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"strings"
+	"videoDownload/api/repository/http"
 	"videoDownload/server"
-
-	"github.com/lbbniu/aliyun-m3u8-downloader/pkg/download"
-	"github.com/lbbniu/aliyun-m3u8-downloader/pkg/tool"
-	"github.com/pkg/errors"
-	"videoDownload/types"
 )
 
 const (
@@ -33,23 +23,27 @@ func Init() {
 }
 
 func main() {
+
+	server.InitMiddleWare()
+	http.GetAllInfoIds()
+
 	//os.Setenv("https_proxy", "http://127.0.0.1:7890")
 	//os.Setenv("http_proxy", "http://127.0.0.1:7890")
-	Init()
-	flag.Parse()
-	if ids == 0 {
-		return
-	}
-	server.InitMiddleWare()
-	rr, err := getResource(url, fmt.Sprintf("%d", ids))
-	if err != nil {
-		fmt.Printf("%+v\n", err)
-	}
-
-	videHome := fmt.Sprintf(path, rr.List[0].VodName)
-	os.MkdirAll(videHome, os.ModePerm)
-	vlist := strings.Split(rr.List[0].VodPlayURL, "#")
-	fmt.Println(vlist)
+	//Init()
+	//flag.Parse()
+	//if ids == 0 {
+	//	return
+	//}
+	//server.InitMiddleWare()
+	//rr, err := getResource(url, fmt.Sprintf("%d", ids))
+	//if err != nil {
+	//	fmt.Printf("%+v\n", err)
+	//}
+	//
+	//videHome := fmt.Sprintf(path, rr.List[0].VodName)
+	//os.MkdirAll(videHome, os.ModePerm)
+	//vlist := strings.Split(rr.List[0].VodPlayURL, "#")
+	//fmt.Println(vlist)
 	//db, err := db.NewDb()
 	//if err != nil {
 	//	panic(err)
@@ -131,37 +125,38 @@ func main() {
 	//}()
 }
 
-func getResource(url string, ids string) (resourceResp *types.ResourceResp, err error) {
-	resp, err := http.Get(fmt.Sprintf("%s?ids=%s&ac=detail", url, ids))
-	if err != nil || resp.StatusCode != 200 {
-		return resourceResp, errors.Wrapf(err, "url=%s,ids=%s", url, ids)
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return resourceResp, errors.Wrapf(err, "url=%s,ids=%s", url, ids)
-	}
-	err = json.Unmarshal(body, &resourceResp)
-	if err != nil {
-		return resourceResp, errors.Wrapf(err, "url=%s,ids=%s", url, ids)
-	}
-	return resourceResp, err
-}
-
-func downloadVideo(url, output string, chanSize int) {
-	if url == "" {
-		tool.PanicParameter("url")
-	}
-	if chanSize <= 0 {
-		panic("parameter 'chanSize' must be greater than 0")
-	}
-
-	downloader, err := download.NewDownloader(download.WithUrl(url), download.WithOutput(output))
-	if err != nil {
-		panic(err)
-	}
-	if err := downloader.Start(chanSize); err != nil {
-		panic(err)
-	}
-	fmt.Println("Done!")
-}
+//
+//func getResource(url string, ids string) (resourceResp *types.ResourceResp, err error) {
+//	resp, err := http2.Get(fmt.Sprintf("%s?ids=%s&ac=detail", url, ids))
+//	if err != nil || resp.StatusCode != 200 {
+//		return resourceResp, errors.Wrapf(err, "url=%s,ids=%s", url, ids)
+//	}
+//	defer resp.Body.Close()
+//	body, err := io.ReadAll(resp.Body)
+//	if err != nil {
+//		return resourceResp, errors.Wrapf(err, "url=%s,ids=%s", url, ids)
+//	}
+//	err = json.Unmarshal(body, &resourceResp)
+//	if err != nil {
+//		return resourceResp, errors.Wrapf(err, "url=%s,ids=%s", url, ids)
+//	}
+//	return resourceResp, err
+//}
+//
+//func downloadVideo(url, output string, chanSize int) {
+//	if url == "" {
+//		tool.PanicParameter("url")
+//	}
+//	if chanSize <= 0 {
+//		panic("parameter 'chanSize' must be greater than 0")
+//	}
+//
+//	downloader, err := download.NewDownloader(download.WithUrl(url), download.WithOutput(output))
+//	if err != nil {
+//		panic(err)
+//	}
+//	if err := downloader.Start(chanSize); err != nil {
+//		panic(err)
+//	}
+//	fmt.Println("Done!")
+//}

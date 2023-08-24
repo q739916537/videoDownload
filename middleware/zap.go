@@ -11,12 +11,12 @@ var log *zap.Logger
 func DefaultLog() *zap.Logger {
 	if log == nil {
 		fmt.Println("log is nil ,again init log middleware")
-		InitLog()
+		log = InitLog()
 	}
 	return log
 }
 
-func InitLog() {
+func InitLog() *zap.Logger {
 	// 配置 Zap 日志
 	cfg := zap.Config{
 		Encoding:         "json",
@@ -28,7 +28,7 @@ func InitLog() {
 	logger, err := cfg.Build()
 	if err != nil {
 		fmt.Println("Failed to create logger:", err)
-		return
+		return nil
 	}
 	defer logger.Sync() // 刷新日志缓冲
 
@@ -43,11 +43,12 @@ func InitLog() {
 		cfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
 	default:
 		fmt.Println("Invalid log level in config")
-		return
+		return nil
 	}
 	// 使用配置好的 Logger
 	logger.Info("Logger initialized", zap.String("log_level", logLevel.String()))
 	logger.Debug("This is a debug message")
 	logger.Info("This is an info message")
 	logger.Error("This is an error message")
+	return logger
 }

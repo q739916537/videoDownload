@@ -18,12 +18,12 @@ func (obj VideInfo) Gets() (results []*VideInfo, err error) {
 }
 
 // Gets 获取批量结果
-func (obj VideInfo) Create(results []*VideInfo) (num int, err error) {
+func (obj VideInfo) Create(results []VideInfo) (err error) {
 	if len(results) != 0 {
-		num = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Create(&results).CreateBatchSize
+		err = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Create(&results).Error
 		return
 	}
-	return 0, nil
+	return nil
 }
 
 // GetBatchFromVodID 批量查找

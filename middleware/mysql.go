@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v3"
 	GromMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"os"
+	"time"
 )
 
 var mysqlConfig *mysql.Config
@@ -36,7 +36,9 @@ func InitMysql() {
 		DefaultLog().Error("configure yaml err:", zap.Error(err))
 		return
 	}
-	db, err := gorm.Open(GromMysql.Open(mysqlConfig.FormatDSN()))
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local&timeout=%s", mysqlConfig.User, mysqlConfig.Passwd, "82.157.166.22", 3306, "voide", time.Second*3)
+
+	db, err := gorm.Open(GromMysql.Open(dsn))
 	if err != nil {
 		DefaultLog().Error("gorm open err:", zap.Error(err))
 		return
@@ -47,9 +49,7 @@ func InitMysql() {
 		DB: db,
 	}
 	// 将第一次数据库连接设为默认值
-	if defaultRepo == nil {
-		defaultRepo = repo
-	}
+	defaultRepo = repo
 }
 
 // UpdateDB update gorm.DB info
@@ -76,16 +76,21 @@ func IsNotFound(err error) bool {
 }
 
 func configureYAML() error {
-	data, err := os.ReadFile("./config/config.yaml")
-	if err != nil {
-		DefaultLog().Error("Read config.yaml err", zap.Error(err))
-		return err
-	}
-
-	err = yaml.Unmarshal(data, mysqlConfig)
-	if err != nil {
-		DefaultLog().Error("Unmarshal config.yaml err", zap.Error(err))
-		return err
-	}
+	//data, err := os.ReadFile("./config/config.yaml")
+	//if err != nil {
+	//	DefaultLog().Error("Read config.yaml err", zap.Error(err))
+	//	return err
+	//}
+	//
+	//err = yaml.Unmarshal(data, mysqlConfig)
+	//if err != nil {
+	//	DefaultLog().Error("Unmarshal config.yaml err", zap.Error(err))
+	//	return err
+	//}
+	mysqlConfig = &mysql.Config{}
+	mysqlConfig.Net = "82.157.166.22:3306"
+	mysqlConfig.User = "root"
+	mysqlConfig.Passwd = "123456"
+	mysqlConfig.DBName = "voide"
 	return nil
 }

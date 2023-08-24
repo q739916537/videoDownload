@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"sync"
 	"time"
+	"videoDownload/api/model"
 	"videoDownload/middleware"
 	"videoDownload/pkg"
 	"videoDownload/pkg/http"
@@ -14,11 +15,12 @@ import (
 type URLProcessor func(url string) string
 
 type TargetList struct {
-	rwMutex *sync.RWMutex
-	wg      *sync.WaitGroup
-	result  []VidePageList
-	ids     []int
-	ch      chan string
+	rwMutex  *sync.RWMutex
+	wg       *sync.WaitGroup
+	result   []VidePageList
+	dbResult []model.VideInfo
+	ids      []int
+	ch       chan string
 }
 
 var tarGetRes = &TargetList{
@@ -43,50 +45,41 @@ func GetAllInfoIds() (string, error) {
 		return "", err
 	}
 	pagecount := videIndex.Pagecount
-
 	urlChan := make(chan string, 1)
 
 	tarGetRes.wg.Add(1)
 	go func() {
-		defer tarGetRes.wg.Done()
+		defer func() {
+			tarGetRes.wg.Done()
+			close(urlChan)
+		}()
 		for i := 0; i < pagecount; i++ {
 			var tagetUrl = pkg.BaseUrl + pkg.PageListSuffix + fmt.Sprint(i+1)
 			urlChan <- tagetUrl
 		}
-
 	}()
 
 	for i := 0; i < pkg.MaxGetPageList; i++ {
 		tarGetRes.wg.Add(1)
 		go func() {
-			tarGetRes.ConsumeUrl(urlChan)
+			ConsumeUrl(urlChan)
 			defer tarGetRes.wg.Done()
 		}()
 	}
 
 	tarGetRes.wg.Wait()
-	marshal, err := json.Marshal(tarGetRes)
-	fmt.Println(string(marshal))
+	fmt.Println("创建了：", len(tarGetRes.dbResult))
 	return string(body), nil
 }
 
 type VidePageList struct {
-	Code      int    `json:"code"`
-	Msg       string `json:"msg"`
-	Page      string `json:"page"`
-	Pagecount int    `json:"pagecount"`
-	Limit     string `json:"limit"`
-	Total     int    `json:"total"`
-	List      []struct {
-		VodId       int    `json:"vod_id"`
-		VodName     string `json:"vod_name"`
-		TypeId      int    `json:"type_id"`
-		TypeName    string `json:"type_name"`
-		VodEn       string `json:"vod_en"`
-		VodTime     string `json:"vod_time"`
-		VodRemarks  string `json:"vod_remarks"`
-		VodPlayFrom string `json:"vod_play_from"`
-	} `json:"list"`
+	Code      int              `json:"code"`
+	Msg       string           `json:"msg"`
+	Page      string           `json:"page"`
+	Pagecount int              `json:"pagecount"`
+	Limit     string           `json:"limit"`
+	Total     int              `json:"total"`
+	List      []model.VideInfo `json:"list"`
 }
 
 func sendUrl(url string) {
@@ -95,11 +88,20 @@ func sendUrl(url string) {
 	videIndex := &VidePageList{}
 	err = json.Unmarshal(body, videIndex)
 	if err != nil {
-		middleware.DefaultLog().Error("GetAllInfoIds Unmarshal is fail", zap.Error(err))
+		middleware.DefaultLog().Error("GetAllInfoIds Unmarshal is fail", zap.Error(err), zap.String(url, url))
+		return
 	}
 	tarGetRes.rwMutex.RLock()
 	defer tarGetRes.rwMutex.RUnlock()
 	tarGetRes.result = append(tarGetRes.result, *videIndex)
+	tarGetRes.dbResult = append(tarGetRes.dbResult, videIndex.List...)
+
+	err = model.NewVideInfo().Create(videIndex.List)
+	if err != nil {
+		middleware.DefaultLog().Error("crate list is fail", zap.Error(err))
+		return
+	}
+
 	list := videIndex.List
 	var ids []int
 	for _, s := range list {
@@ -108,10 +110,11 @@ func sendUrl(url string) {
 	tarGetRes.ids = append(tarGetRes.ids, ids...)
 
 }
-func (t TargetList) ConsumeUrl(urlChan <-chan string) {
+func ConsumeUrl(urlChan <-chan string) {
 	for {
 		select {
-		case url, ok := <-t.ch:
+		case url, ok := <-urlChan:
+			fmt.Println("接收到URL：", url)
 			if !ok {
 				return
 			}
