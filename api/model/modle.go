@@ -25,3 +25,11 @@ type VideInfo struct {
 	VodPlayURL string `gorm:"column:vod_play_url" json:"vod_play_url"`
 	VodSerial  string `gorm:"column:vod_serial" json:"vod_serial"`
 }
+
+func (videInfo VideInfo) TableName() string {
+	return "vide_info"
+}
+
+func NewVideInfo() *VideInfo {
+	return new(VideInfo)
+}

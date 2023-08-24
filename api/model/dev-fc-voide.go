@@ -1,10 +1,5 @@
 package model
 
-// TableName get sql table name.获取数据库表名
-func (m *VideInfo) TableName() string {
-	return "vide_info"
-}
-
 // VideInfoColumns get sql column name.获取数据库列名
 var VideInfoColumns = struct {
 	VodID      string
