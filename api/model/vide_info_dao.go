@@ -26,6 +26,16 @@ func (obj VideInfo) Create(results []VideInfo) (err error) {
 	return nil
 }
 
+// DeleteById 批量删除
+func (obj VideInfo) DeleteById(results []VideInfo) (err error) {
+	var delId []int
+	for result := range results {
+		delId = append(delId, results[result].VodId)
+	}
+	err = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Where("vod_id IN (?)", delId).Delete(&VideInfo{}).Error
+	return err
+}
+
 // GetBatchFromVodID 批量查找
 func (obj VideInfo) GetBatchFromVodID(vodIDs []int) (results []*VideInfo, err error) {
 	err = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Where("`vod_id` IN (?)", vodIDs).Find(&results).Error
@@ -43,6 +53,10 @@ func (obj VideInfo) Count(count *int64) (tx *gorm.DB) {
 func (obj VideInfo) GetFromVodID(vodID int) (results []*VideInfo, err error) {
 	err = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Where("`vod_id` = ?", vodID).Find(&results).Error
 
+	return
+}
+func (obj VideInfo) GetVodName(vodName string) (results []*VideInfo, err error) {
+	err = middleware.MysqlDef().GetDb().Where("`vod_name` LIKE ?", "%"+vodName+"%").Find(&results).Error
 	return
 }
 

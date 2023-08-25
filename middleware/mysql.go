@@ -87,6 +87,7 @@ func configureYAML() error {
 	//	DefaultLog().Error("Unmarshal config.yaml err", zap.Error(err))
 	//	return err
 	//}
+
 	mysqlConfig = &mysql.Config{}
 	mysqlConfig.Net = "82.157.166.22:3306"
 	mysqlConfig.User = "root"

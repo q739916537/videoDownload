@@ -2,9 +2,11 @@ package internal_http
 
 import (
 	"fmt"
+	"go.uber.org/zap"
 	io "io"
 	"net/http"
 	"time"
+	"videoDownload/middleware"
 )
 
 var maxRetries = 3
@@ -69,9 +71,9 @@ func HTTPRequest(url, method string, body []byte) ([]byte, error) {
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
+		middleware.DefaultLog().Error("HTTPRequest read body is fail", zap.Error(err), zap.String("url", url), zap.String("method", method))
 		return nil, err
 	}
-
 	return body, nil
 }
 

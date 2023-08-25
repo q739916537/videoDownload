@@ -11,6 +11,8 @@
 
 package model
 
+import "time"
+
 type ResourceResp struct {
 	Code  int        `json:"code" `
 	Total int        `json:"total"`
@@ -41,4 +43,39 @@ func (videInfo VideInfo) TableName() string {
 
 func NewVideInfo() *VideInfo {
 	return new(VideInfo)
+}
+
+type VideErrorInfo struct {
+	VodUrl     string    `json:"vod_url" gorm:"column:vod_url"`
+	Method     string    `json:"method" gorm:"column:method"`
+	CreateTime time.Time `json:"create_time" gorm:"column:create_time"`
+	Error      string    `json:"error" gorm:"column:error"`
+}
+
+func (videInfo VideErrorInfo) TableName() string {
+	return "vide_error_info"
+}
+
+func NewVideErrorInfo() *VideErrorInfo {
+	return new(VideErrorInfo)
+}
+
+// VideUrlInfo  url具体信息存储
+type VideUrlInfo struct {
+	VodID         int    `gorm:"column:vod_id" json:"vod_id"`
+	VodName       string `gorm:"column:vod_name" json:"vod_name"`
+	VodStatus     int    `gorm:"column:vod_status" json:"vod_status"`
+	VodYear       string `gorm:"column:vod_year" json:"vod_year"`
+	VodPlayURL    string `gorm:"column:vod_play_url" json:"vod_play_url"`
+	VodLocalPath  string `gorm:"column:vod_local_path" json:"vod_local_path"`
+	VodSerial     string `gorm:"column:vod_serial" json:"vod_serial"`
+	VodDownStatus string `gorm:"column:vod_down_status" json:"vod_down_status"`
+}
+
+func (videInfo VideUrlInfo) TableName() string {
+	return "vide_url_info"
+}
+
+func NewVideUrlInfo() *VideErrorInfo {
+	return new(VideErrorInfo)
 }

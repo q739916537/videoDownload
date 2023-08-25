@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
-	"videoDownload/api/repository/http"
+	"net/http"
+	"videoDownload/api/model"
 	"videoDownload/server"
 )
 
@@ -25,7 +27,27 @@ func Init() {
 func main() {
 
 	server.InitMiddleWare()
-	http.GetAllInfoIds()
+	//http_repo.GetAllInfoIds()
+	http.HandleFunc("/GetId", func(writer http.ResponseWriter, request *http.Request) {
+		name := request.URL.Query().Get("name")
+		if name == "" {
+			writer.Write([]byte("name is null"))
+			return
+		}
+		results, err := model.NewVideInfo().GetVodName(name)
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+		bytes, _ := json.Marshal(results)
+		writer.Write(bytes)
+		return
+	})
+
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		return
+	}
 
 	//os.Setenv("https_proxy", "http://127.0.0.1:7890")
 	//os.Setenv("http_proxy", "http://127.0.0.1:7890")

@@ -1,4 +1,4 @@
-package http
+package http_repo
 
 import (
 	"encoding/json"
@@ -85,6 +85,26 @@ type VidePageList struct {
 func sendUrl(url string) {
 	method := "GET"
 	body, err := internal_http.HTTPRequest(url, method, []byte{})
+	if err != nil {
+		errorInfo := model.NewVideErrorInfo()
+		// 记录失败的url
+		deleteErr := errorInfo.DeleteByUrl(url)
+		if deleteErr != nil {
+			middleware.DefaultLog().Error(" url download is fail,record delete Url is fail", zap.Error(deleteErr))
+			return
+		}
+		err2 := errorInfo.CreateOne(model.VideErrorInfo{
+			VodUrl:     url,
+			Method:     method,
+			CreateTime: time.Now(),
+			Error:      err.Error(),
+		})
+		if err2 != nil {
+			middleware.DefaultLog().Error(" url download is fail,record create Url is fail", zap.Error(err2))
+			return
+		}
+		return
+	}
 	videIndex := &VidePageList{}
 	err = json.Unmarshal(body, videIndex)
 	if err != nil {
@@ -95,6 +115,11 @@ func sendUrl(url string) {
 	defer tarGetRes.rwMutex.RUnlock()
 	tarGetRes.result = append(tarGetRes.result, *videIndex)
 	tarGetRes.dbResult = append(tarGetRes.dbResult, videIndex.List...)
+
+	deleErr := model.NewVideInfo().DeleteById(videIndex.List)
+	if deleErr != nil {
+		middleware.DefaultLog().Error("Delete Video is fail err:", zap.Error(err), zap.String(url, url))
+	}
 
 	err = model.NewVideInfo().Create(videIndex.List)
 	if err != nil {
@@ -114,14 +139,21 @@ func ConsumeUrl(urlChan <-chan string) {
 	for {
 		select {
 		case url, ok := <-urlChan:
-			fmt.Println("接收到URL：", url)
 			if !ok {
 				return
 			}
+			fmt.Println("接收到URL：", url)
 			sendUrl(url)
 		default:
 			time.Sleep(time.Second * 1)
 		}
 
+	}
+}
+
+func GetVideInfoByUrl(id int, url string) {
+	results, err := model.NewVideInfo().GetId(id)
+	if err != nil {
+		return
 	}
 }
