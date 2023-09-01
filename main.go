@@ -3,8 +3,13 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
+	"github.com/lbbniu/aliyun-m3u8-downloader/pkg/download"
+	"github.com/lbbniu/aliyun-m3u8-downloader/pkg/tool"
 	"net/http"
+	"strconv"
 	"videoDownload/api/model"
+	"videoDownload/api/repository/http_repo"
 	"videoDownload/server"
 )
 
@@ -41,6 +46,25 @@ func main() {
 		}
 		bytes, _ := json.Marshal(results)
 		writer.Write(bytes)
+		return
+	})
+	http.HandleFunc("/Download", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.URL.Query().Get("id")
+		if id == "" {
+			writer.Write([]byte("id is null"))
+			return
+		}
+		num, err := strconv.Atoi(id)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+		err = http_repo.GetVideInfoByUrl(num, "")
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+		writer.Write([]byte("success"))
 		return
 	})
 
@@ -164,21 +188,21 @@ func main() {
 //	}
 //	return resourceResp, err
 //}
-//
-//func downloadVideo(url, output string, chanSize int) {
-//	if url == "" {
-//		tool.PanicParameter("url")
-//	}
-//	if chanSize <= 0 {
-//		panic("parameter 'chanSize' must be greater than 0")
-//	}
-//
-//	downloader, err := download.NewDownloader(download.WithUrl(url), download.WithOutput(output))
-//	if err != nil {
-//		panic(err)
-//	}
-//	if err := downloader.Start(chanSize); err != nil {
-//		panic(err)
-//	}
-//	fmt.Println("Done!")
-//}
+
+func downloadVideo(url, output string, chanSize int) {
+	if url == "" {
+		tool.PanicParameter("url")
+	}
+	if chanSize <= 0 {
+		panic("parameter 'chanSize' must be greater than 0")
+	}
+
+	downloader, err := download.NewDownloader(download.WithUrl(url), download.WithOutput(output))
+	if err != nil {
+		panic(err)
+	}
+	if err := downloader.Start(chanSize); err != nil {
+		panic(err)
+	}
+	fmt.Println("Done!")
+}

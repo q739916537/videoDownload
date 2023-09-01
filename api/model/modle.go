@@ -50,6 +50,7 @@ type VideErrorInfo struct {
 	Method     string    `json:"method" gorm:"column:method"`
 	CreateTime time.Time `json:"create_time" gorm:"column:create_time"`
 	Error      string    `json:"error" gorm:"column:error"`
+	Lx         string    `json:"lx" gorm:"column:lx"`
 }
 
 func (videInfo VideErrorInfo) TableName() string {

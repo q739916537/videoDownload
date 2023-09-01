@@ -7,7 +7,7 @@ import (
 
 // Get 获取
 func (obj VideInfo) GetId(id int) (results *VideInfo, err error) {
-	err = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Where("id = ?", id).Find(&results).Error
+	err = middleware.MysqlDef().GetDb().Model(&VideInfo{}).Where(" vod_id= ?", id).Find(&results).Error
 	return
 }
 
@@ -56,7 +56,25 @@ func (obj VideInfo) GetFromVodID(vodID int) (results []*VideInfo, err error) {
 	return
 }
 func (obj VideInfo) GetVodName(vodName string) (results []*VideInfo, err error) {
-	err = middleware.MysqlDef().GetDb().Where("`vod_name` LIKE ?", "%"+vodName+"%").Find(&results).Error
+	err = middleware.MysqlDef().GetDb().Where("`vod_name` LIKE ? ", "%"+vodName+"%").Find(&results).Error
+	return
+}
+
+func (obj VideInfo) GetVideInfoByNameOrId(vodName string, id int) (results []*VideInfo, err error) {
+	query := ""
+	var where []interface{}
+	if vodName != "" {
+		query += "`vod_name` LIKE ? "
+		where = append(where, "%"+vodName+"%")
+	}
+	if id != 0 {
+		if query != "" {
+			query += "AND "
+		}
+		query += "`vod_id` = ? "
+		where = append(where, id)
+	}
+	err = middleware.MysqlDef().GetDb().Where(query, where).Find(&results).Error
 	return
 }
 

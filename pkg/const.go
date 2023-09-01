@@ -7,3 +7,9 @@ const DownloadInfoUrl = "https://kuaikan-api.com/api.php/provide/vod/from/kuaika
 
 // 最大获取分页的数量
 const MaxGetPageList = 200
+
+// 常量
+
+const (
+	DownloadUrlInfo = "urlInfo"
+)

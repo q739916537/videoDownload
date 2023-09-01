@@ -3,7 +3,10 @@ package http_repo
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lbbniu/aliyun-m3u8-downloader/pkg/download"
+	"github.com/lbbniu/aliyun-m3u8-downloader/pkg/tool"
 	"go.uber.org/zap"
+	"strings"
 	"sync"
 	"time"
 	"videoDownload/api/model"
@@ -151,9 +154,99 @@ func ConsumeUrl(urlChan <-chan string) {
 	}
 }
 
-func GetVideInfoByUrl(id int, url string) {
-	results, err := model.NewVideInfo().GetId(id)
-	if err != nil {
-		return
+// GetVideInfoByUrl 根据id或者url下载视频
+func GetVideInfoByUrl(id int, url string) error {
+	if id != 0 {
+		_, err := model.NewVideInfo().GetId(id)
+		if err != nil {
+			middleware.DefaultLog().Error("GetVideInfoByUrl is fail,id is not exits", zap.Error(err))
+			return err
+		}
+		url = pkg.DownloadInfoUrl + fmt.Sprintf("%d", id)
 	}
+	recordErr, err := SendUrlByByteRecordErr(url, pkg.DownloadUrlInfo)
+	if err != nil {
+		return err
+	}
+	var result UrlInfoResult
+	err = json.Unmarshal(recordErr, &result)
+	if err != nil {
+		middleware.DefaultLog().Error("GetVideInfoByUrl is fail,err is ", zap.Error(err))
+		return err
+	}
+	if len(result.List) > 0 {
+
+		vlist := strings.Split(result.List[0].VodPlayURL, "#")
+		fmt.Println(vlist)
+		for _, playURL := range vlist {
+			go func() {
+				URL := strings.Split(playURL, "$")
+				downloadVideo(URL[1], "./tmp/", 8)
+			}()
+		}
+	}
+	return nil
+}
+func GetVideNameLike(name string, id int) ([]*model.VideInfo, error) {
+	results, err := model.NewVideInfo().GetVideInfoByNameOrId(name, id)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func downloadVideo(url, output string, chanSize int) {
+	if url == "" {
+		tool.PanicParameter("url")
+	}
+	if chanSize <= 0 {
+		panic("parameter 'chanSize' must be greater than 0")
+	}
+
+	downloader, err := download.NewDownloader(download.WithUrl(url), download.WithOutput(output))
+	if err != nil {
+		panic(err)
+	}
+	if err := downloader.Start(chanSize); err != nil {
+		panic(err)
+	}
+	fmt.Println("Done!")
+}
+
+// 发送请求并返回byte数据记录err
+func SendUrlByByteRecordErr(url, lx string) ([]byte, error) {
+	method := "GET"
+	body, err := internal_http.HTTPRequest(url, method, []byte{})
+	if err != nil {
+		errorInfo := model.NewVideErrorInfo()
+		// 记录失败的url
+		deleteErr := errorInfo.DeleteByUrl(url)
+		if deleteErr != nil {
+			middleware.DefaultLog().Error(" url download is fail,record delete Url is fail", zap.Error(deleteErr))
+			return nil, err
+		}
+		var err2 = errorInfo.CreateOne(model.VideErrorInfo{
+			VodUrl:     url,
+			Method:     method,
+			CreateTime: time.Now(),
+			Error:      err.Error(),
+			Lx:         lx,
+		})
+		if err2 != nil {
+			middleware.DefaultLog().Error(" url download is fail,record create Url is fail", zap.Error(err2))
+			return nil, err
+		}
+		return nil, err
+	}
+	return body, err
+}
+
+type UrlInfoResult struct {
+	Code      int                 `json:"code"`
+	Msg       string              `json:"msg"`
+	Page      int                 `json:"page"`
+	Pagecount int                 `json:"pagecount"`
+	Limit     string              `json:"limit"`
+	Total     int                 `json:"total"`
+	List      []model.VideUrlInfo `json:"list"`
 }
